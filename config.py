@@ -22,3 +22,9 @@ class DevelopmentConfig(Config):  # 开发环境配置
 
 class ProductConfig(Config):  # 生产环境配置
     DEBUG = False  # 设置调试模式
+
+
+config_dict = {
+    "dev": DevelopmentConfig,
+    "pro": ProductConfig
+}
