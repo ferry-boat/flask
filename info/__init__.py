@@ -57,4 +57,8 @@ def create_app(config_type):  # 创建应用  工厂函数（调用者提供物�
     # 配置日志
     setup_log(config_class.LOG_LEVEL)
 
+    # 关联模型文件
+    # from info.models import *  # 函数和方法内部不允许该语法
+    import info.models
+
     return app
