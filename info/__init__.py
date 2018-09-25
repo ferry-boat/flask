@@ -44,7 +44,7 @@ def create_app(config_type):  # 创建应用  工厂函数（调用者提供物�
     # 创建数据库连接
     db = SQLAlchemy(app)
     # 创建redis连接
-    sr = StrictRedis(host=config_class.REDIS_HOST, port=config_class.REDIS_PORT)
+    sr = StrictRedis(host=config_class.REDIS_HOST, port=config_class.REDIS_PORT, decode_responses=True)
     # 创建Session存储对象
     Session(app)
     # 创建迁移器
