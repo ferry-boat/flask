@@ -63,4 +63,8 @@ def create_app(config_type):  # 创建应用  工厂函数（调用者提供物�
     # from info.models import *  # 函数和方法内部不允许该语法
     import info.models
 
+    # 添加过滤器
+    from info.common import func_index_convert
+    app.add_template_filter(func_index_convert, "index_convert")
+
     return app

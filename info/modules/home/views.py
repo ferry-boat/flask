@@ -1,5 +1,6 @@
 from info import sr
-from info.models import User
+from info.constants import CLICK_RANK_MAX_NEWS
+from info.models import User, News
 from . import home_blu
 import logging  # python内置的日志模块 可以将日志信息输出到控制台，也可以将日志保存到文件中
 # flask的日志信息也是用logging模块实现的，但是flask没有将日志保存到文件中
@@ -20,8 +21,18 @@ def index():
             current_app.logger.error(e)
 
     user = user.to_dict() if user else None
+
+    # 查询`点击量排行前10的新闻`
+    news_list = []
+    try:
+        news_list = News.query.order_by(News.clicks.desc()).limit(CLICK_RANK_MAX_NEWS).all()
+    except BaseException as e:
+        current_app.logger.error(e)
+
+    news_list = [news.to_basic_dict() for news in news_list]
+
     # 将用户信息传入模板, 进行模板渲染
-    return render_template("index.html", user=user)
+    return render_template("index.html", user=user, news_list=news_list)
 
 
 # 设置网站小图标
