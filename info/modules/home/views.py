@@ -1,6 +1,6 @@
 from info import sr
 from info.constants import CLICK_RANK_MAX_NEWS, HOME_PAGE_MAX_NEWS
-from info.models import User, News
+from info.models import User, News, Category
 from info.utils.response_code import RET, error_map
 from . import home_blu
 import logging  # python内置的日志模块 可以将日志信息输出到控制台，也可以将日志保存到文件中
@@ -32,8 +32,15 @@ def index():
 
     news_list = [news.to_basic_dict() for news in news_list]
 
+    # 查询所有的分类信息
+    categories = []
+    try:
+        categories = Category.query.all()
+    except BaseException as e:
+        current_app.logger.error(e)
+
     # 将用户信息传入模板, 进行模板渲染
-    return render_template("index.html", user=user, news_list=news_list)
+    return render_template("index.html", user=user, news_list=news_list, categories=categories)
 
 
 # 设置网站小图标
