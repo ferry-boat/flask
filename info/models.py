@@ -70,7 +70,7 @@ class User(BaseModel, db.Model):
     def check_password(self, password):  # 校验密码
         return check_password_hash(self.password_hash, password)
 
-    def to_dict(self):
+    def to_dict(self):  # 封装对属性的展示处理
         resp_dict = {
             "id": self.id,
             "nick_name": self.nick_name,
