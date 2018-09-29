@@ -31,10 +31,17 @@ def news_detail(news_id):
 
     news_list = [news.to_basic_dict() for news in news_list]
 
-    user = g.user.to_dict() if g.user else None
+    user = g.user
+    is_collect = False
+    if user:
+        # 查询`当前用户是否收藏了该新闻`, 将情况传入模板, 模板渲染
+        if news in user.collection_news:
+            is_collect = True
+
+    user = user.to_dict() if user else None
 
     # 将数据传入模板, 进行模板渲染
-    return render_template("detail.html", news=news.to_dict(), news_list=news_list, user=user)
+    return render_template("detail.html", news=news.to_dict(), news_list=news_list, user=user, is_collect=is_collect)
 
 
 
