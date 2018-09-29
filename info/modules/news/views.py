@@ -47,12 +47,25 @@ def news_detail(news_id):
         current_app.logger.error(e)
         return jsonify(errno=RET.DBERR, errmsg=error_map[RET.DBERR])
 
-    comments = [comment.to_dict() for comment in comments]
+
+    comment_list = []
+
+    for comment in comments:
+        comment_dict = comment.to_dict()
+        is_like = False
+        # 判断哪些评论被”我”点过赞
+        if user:  # 如果该用户已登录
+            if comment in user.like_comments:
+                is_like = True
+
+        comment_dict["is_like"] = is_like
+        comment_list.append(comment_dict)
+
 
     user = user.to_dict() if user else None
 
     # 将数据传入模板, 进行模板渲染
-    return render_template("detail.html", news=news.to_dict(), news_list=news_list, user=user, is_collect=is_collect, comments=comments)
+    return render_template("detail.html", news=news.to_dict(), news_list=news_list, user=user, is_collect=is_collect, comments=comment_list)
 
 
 
