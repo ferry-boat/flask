@@ -38,6 +38,7 @@ def news_detail(news_id):
         if news in user.collection_news:
             is_collect = True
 
+
     user = user.to_dict() if user else None
 
     # 将数据传入模板, 进行模板渲染
