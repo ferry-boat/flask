@@ -40,10 +40,19 @@ def news_detail(news_id):
             is_collect = True
 
 
+    # `查询该新闻的所有评论`(生成日期倒序), 再进行`模板渲染`
+    try:
+        comments = news.comments.order_by(Comment.create_time.desc()).all()
+    except BaseException as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg=error_map[RET.DBERR])
+
+    comments = [comment.to_dict() for comment in comments]
+
     user = user.to_dict() if user else None
 
     # 将数据传入模板, 进行模板渲染
-    return render_template("detail.html", news=news.to_dict(), news_list=news_list, user=user, is_collect=is_collect)
+    return render_template("detail.html", news=news.to_dict(), news_list=news_list, user=user, is_collect=is_collect, comments=comments)
 
 
 
