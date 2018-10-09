@@ -60,6 +60,9 @@ def create_app(config_type):  # 创建应用  工厂函数（调用者提供物�
     from info.modules.news import news_blu
     app.register_blueprint(news_blu)
 
+    from info.modules.user import user_blu
+    app.register_blueprint(user_blu)
+
     # 配置日志
     setup_log(config_class.LOG_LEVEL)
 
