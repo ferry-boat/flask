@@ -1,7 +1,7 @@
 from info import db
 from info.common import user_login_data, img_upload
-from info.constants import QINIU_DOMIN_PREFIX
-from info.models import Category, News
+from info.constants import QINIU_DOMIN_PREFIX, USER_COLLECTION_MAX_NEWS
+from info.models import Category, News, tb_user_collection
 from info.modules.user import user_blu
 from flask import render_template, g, redirect, abort, request, jsonify, current_app
 
@@ -172,3 +172,43 @@ def news_release():
     db.session.add(news)
     
     return jsonify(errno=RET.OK, errmsg=error_map[RET.OK])
+
+
+# 显示我的收藏
+@user_blu.route('/collection')
+@user_login_data
+def collection():
+    # 判断用户是否登录
+    user = g.user
+    if not user:
+        return abort(403)
+    # 获取当前页码
+    p = request.args.get("p", 1)
+
+    try:
+        p = int(p)
+    except BaseException as e:
+        current_app.logger.error(e)
+        return abort(403)
+
+
+    # 查询当前用户收藏的所有新闻  指定页码
+    news_list = []
+    cur_page = 1
+    total_page = 1
+    try:
+        pn = user.collection_news.order_by(tb_user_collection.c.create_time.desc()).paginate(p, USER_COLLECTION_MAX_NEWS)
+        news_list = [news.to_basic_dict() for news in pn.items]
+        cur_page = pn.page
+        total_page = pn.pages
+
+    except BaseException as e:
+        current_app.logger.error(e)
+
+    data = {
+        "news_list": news_list,
+        "cur_page": cur_page,
+        "total_page": total_page
+    }
+    # 后端渲染收藏的新闻
+    return render_template("user_collection.html", data=data)
