@@ -73,9 +73,9 @@ def get_news_list():
         return jsonify(errno=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
 
     # 判断分类id是否等于1   "最新"是所有新闻一起排列,不包含具体的新闻
-    filter_list = []
+    filter_list = [News.status == 0]
     if cid != 1:
-        filter_list.append(News.category_id == cid)
+        filter_list.append(News.category_id == cid)  # [News.status == 0, News.category_id == cid]
 
     # 根据参数查询目标新闻 (查询指定分类&指定页码的新闻, 并按生成日期倒序排列)
     try:

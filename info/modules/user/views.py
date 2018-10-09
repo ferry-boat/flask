@@ -1,4 +1,7 @@
+from info import db
 from info.common import user_login_data, img_upload
+from info.constants import QINIU_DOMIN_PREFIX
+from info.models import Category, News
 from info.modules.user import user_blu
 from flask import render_template, g, redirect, abort, request, jsonify, current_app
 
@@ -105,5 +108,67 @@ def pass_info():
         
     # 校验正确, 修改密码
     user.password = new_password
+    
+    return jsonify(errno=RET.OK, errmsg=error_map[RET.OK])
+
+
+# 显示界面/发布新闻
+@user_blu.route('/news_release', methods=['GET', 'POST'])
+@user_login_data
+def news_release():
+    # 判断用户是否登录
+    user = g.user
+    if not user:
+        return abort(403)
+
+    if request.method == "GET":
+        # 查询所有的分类信息, 再传入模板
+        categories = []
+        try:
+            categories = Category.query.all()
+        except BaseException as e:
+            current_app.logger.error(e)
+            return jsonify(errno=RET.DBERR, errmsg=error_map[RET.DBERR])
+
+        if len(categories):
+            categories.pop(0)
+
+        return render_template("user_news_release.html", categories=categories)
+
+    # POST处理
+    title = request.form.get("title")
+    category_id = request.form.get("category_id")
+    digest = request.form.get("digest")
+    content = request.form.get("content")
+    if not all([title, category_id, digest, content]):
+        return jsonify(errno=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
+
+    try:
+        category_id = int(category_id)
+    except BaseException as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
+
+    # 生成一个新的新闻模型
+    news = News()
+    news.title = title
+    news.category_id = category_id
+    news.digest = digest
+    news.content = content
+    news.source = "个人发布"  # 新闻来源
+    news.user_id = user.id  # 新闻作者id
+    news.status = 1  # 新闻审核状态
+
+    try:
+        img_bytes = request.files.get("index_image").read()
+        file_name = img_upload(img_bytes)
+        news.index_image_url = QINIU_DOMIN_PREFIX + file_name
+    except BaseException as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
+
+
+    # 添加到数据库中
+    db.session.add(news)
     
     return jsonify(errno=RET.OK, errmsg=error_map[RET.OK])
