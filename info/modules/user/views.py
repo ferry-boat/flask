@@ -192,7 +192,7 @@ def collection():
         return abort(403)
 
 
-    # 查询当前用户收藏的所有新闻  指定页码
+    # 查询当前用户收藏的所有新闻  指定页码  根据收藏时间倒序
     news_list = []
     cur_page = 1
     total_page = 1
@@ -212,3 +212,43 @@ def collection():
     }
     # 后端渲染收藏的新闻
     return render_template("user_collection.html", data=data)
+
+
+# 显示我的发布
+@user_blu.route('/news_list')
+@user_login_data
+def news_list():
+    # 判断用户是否登录
+    user = g.user
+    if not user:
+        return abort(403)
+    # 获取当前页码
+    p = request.args.get("p", 1)
+
+    try:
+        p = int(p)
+    except BaseException as e:
+        current_app.logger.error(e)
+        return abort(403)
+
+
+    # 查询当前用户发布的所有新闻  指定页码  根据发布时间倒序
+    news_list = []
+    cur_page = 1
+    total_page = 1
+    try:
+        pn = user.news_list.order_by(News.create_time.desc()).paginate(p, USER_COLLECTION_MAX_NEWS)
+        news_list = [news.to_review_dict() for news in pn.items]
+        cur_page = pn.page
+        total_page = pn.pages
+
+    except BaseException as e:
+        current_app.logger.error(e)
+
+    data = {
+        "news_list": news_list,
+        "cur_page": cur_page,
+        "total_page": total_page
+    }
+    # 后端渲染收藏的新闻
+    return render_template("user_news_list.html", data=data)
