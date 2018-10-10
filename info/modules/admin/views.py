@@ -212,3 +212,17 @@ def news_review():
     }
     # 后端渲染收藏的新闻
     return render_template("admin/news_review.html", data=data)
+
+
+# 显示新闻审核详情
+@admin_blu.route('/news_review_detail/<int:news_id>')
+def news_review_detail(news_id):
+    # 根据新闻id取出新闻模型
+    try:
+        news = News.query.get(news_id)
+    except BaseException as e:
+        current_app.logger.error(e)
+        return abort(404)
+
+    # 将数据传入模板渲染
+    return render_template("admin/news_review_detail.html", news=news.to_dict())
