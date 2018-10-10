@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timedelta
 
-from flask import render_template, request, current_app, redirect, url_for, session, g, abort
+from flask import render_template, request, current_app, redirect, url_for, session, g, abort, jsonify
 
 from info.common import user_login_data
 from info.constants import ADMIN_USER_PAGE_MAX_COUNT
@@ -10,6 +10,9 @@ from info.modules.admin import admin_blu
 
 
 # 后台登录
+from info.utils.response_code import RET, error_map
+
+
 @admin_blu.route('/login', methods=['GET', "POST"])
 def login():
 
@@ -226,3 +229,47 @@ def news_review_detail(news_id):
 
     # 将数据传入模板渲染
     return render_template("admin/news_review_detail.html", news=news.to_dict())
+
+
+# 提交审核
+@admin_blu.route('/news_review_action', methods=['POST'])
+def news_review_action():
+    # 获取参数
+    news_id = request.json.get("news_id")
+    action = request.json.get("action")
+    reason = request.json.get("reason")
+    # 校验参数
+    if not all([news_id, action]):
+        return jsonify(errno=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
+    
+    if action not in ["accept", "reject"]:
+        return jsonify(errno=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
+    
+    try:
+        news_id = int(news_id)
+    except BaseException as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
+    
+    # 取出新闻模型
+    try:
+        news = News.query.get(news_id)
+    except BaseException as e:
+        current_app.logger.error(e)
+        return jsonify(errno=RET.DBERR, errmsg=error_map[RET.DBERR])
+    
+    if not news:
+        return jsonify(errno=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
+    
+    # 根据action设置status
+    if action == "accept":  # 通过
+        news.status = 0
+    else:
+        news.status = -1
+        # 设置原因
+        if not reason:
+            return jsonify(errno=RET.PARAMERR, errmsg=error_map[RET.PARAMERR])
+        news.reason = reason
+        
+    # 返回json
+    return jsonify(errno=RET.OK, errmsg=error_map[RET.OK])
