@@ -18,7 +18,7 @@ def user_info():
     if not user:
         return redirect("/")
 
-    return render_template("user.html", user=user.to_dict())
+    return render_template("news/user.html", user=user.to_dict())
 
 
 # 显示/修改基本资料
@@ -31,7 +31,7 @@ def base_info():
         return abort(403)
 
     if request.method == "GET":
-        return render_template("user_base_info.html", user=user.to_dict())
+        return render_template("news/user_base_info.html", user=user.to_dict())
     
     # POST处理
     signature = request.json.get("signature")
@@ -62,7 +62,7 @@ def pic_info():
         return abort(403)
 
     if request.method == "GET":
-        return render_template("user_pic_info.html", user=user.to_dict())
+        return render_template("news/user_pic_info.html", user=user.to_dict())
 
     # POST处理
     try:
@@ -94,7 +94,7 @@ def pass_info():
         return abort(403)
 
     if request.method == "GET":
-        return render_template("user_pass_info.html")
+        return render_template("news/user_pass_info.html")
 
     # POST处理
     old_password = request.json.get("old_password")
@@ -133,7 +133,7 @@ def news_release():
         if len(categories):
             categories.pop(0)
 
-        return render_template("user_news_release.html", categories=categories)
+        return render_template("news/user_news_release.html", categories=categories)
 
     # POST处理
     title = request.form.get("title")
@@ -211,7 +211,7 @@ def collection():
         "total_page": total_page
     }
     # 后端渲染收藏的新闻
-    return render_template("user_collection.html", data=data)
+    return render_template("news/user_collection.html", data=data)
 
 
 # 显示我的发布
@@ -251,4 +251,4 @@ def news_list():
         "total_page": total_page
     }
     # 后端渲染收藏的新闻
-    return render_template("user_news_list.html", data=data)
+    return render_template("news/user_news_list.html", data=data)

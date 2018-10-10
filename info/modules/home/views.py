@@ -40,7 +40,7 @@ def index():
         current_app.logger.error(e)
 
     # 将用户信息传入模板, 进行模板渲染
-    return render_template("index.html", user=user, news_list=news_list, categories=categories)
+    return render_template("news/index.html", user=user, news_list=news_list, categories=categories)
 
 
 # 设置网站小图标
